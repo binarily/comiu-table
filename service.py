@@ -146,7 +146,7 @@ class TableService:
         self.interface.print_on_display(f"The order is ready, please head to counter {colour.segment} "
                                         f"marked by this colour.")
         # Show colours
-        self.interface.set_colour(colour.colour)
+        self.interface.set_colour(colour.colour, colour.segment)
         pass
 
     def handle_order_done(self):

@@ -7,6 +7,7 @@ class DummyInterface:
     button_lights = {element: LightState.OFF for element in range(8)}
     screen_text = "Hello!"
     colour: Optional[int] = None
+    segment: Optional[int] = None
 
     def __init__(self):
         import service
@@ -32,21 +33,18 @@ class DummyInterface:
     def switch_light_mode(self, number: int, mode: LightState):
         self.button_lights[number] = mode
 
-    def set_colour(self, number: int):
-        self.colour = number
+    def set_colour(self, colour: int, segment: int):
+        self.colour = colour
+        self.segment = segment
 
     def remove_colour(self):
-        self.colour = Optional[int](None)
+        self.colour = None
+        self.segment = None
 
     def print_state(self):
         return {
             "screen_text": self.screen_text,
             "colour": self.colour,
+            "segment": self.segment,
             "buttons": self.button_lights
         }
-        #result = ""
-        #for index, val in enumerate(self.button_lights):
-        #    result += f"Button {index} set to {val}\n"
-        #result += f"Screen says: {self.screen_text}\n"
-        #result += f"Colour shown: {self.colour}\n"
-        #return result
