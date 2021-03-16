@@ -91,6 +91,7 @@ class TableService:
         self.multiple_selection = True
         self.current_order[self.last_button.sku] += 1
         self.total_amount += self.last_button.price
+        self.interface.switch_light_mode(self.buttons.index(self.last_button), LightState.BLINKING)
         # Show the screen for selecting multiples for self.last_button
         if self.last_button.sku not in self.current_order.keys():
             order_size = 0
