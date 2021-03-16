@@ -26,6 +26,7 @@ class TableService:
     interface: DummyInterface
     server_api: OrderControllerApi
     device_id: int = 3
+    segment_ids = {7: 0, 8: 1, 9: 2, 10: 3}
 
     def __init__(self, interface: DummyInterface):
         self.interface = interface
@@ -42,6 +43,8 @@ class TableService:
         self.buttons.append(ButtonInfo("Grolsch", 12.0, 18, True))
 
     def handle_beverage_button(self, number: int):
+        if not self.can_order:
+            return
         current_button = self.buttons[number]
         # If at least one of the orders is in multiples
         if self.multiple_selection:
@@ -58,7 +61,6 @@ class TableService:
                 f"Ordering {current_button.name}, \n"
                 f"cost: {current_button.price}, \n"
                 f"ordered: {order_size}")
-            pass
         else:
             if current_button.sku in self.current_order:
                 self.current_order.pop(current_button.sku)
@@ -78,45 +80,59 @@ class TableService:
         self.last_button = current_button
 
     def handle_add_button(self):
+        if not self.can_order:
+            return
         # Add button on empty history does nothing
         if self.last_button is None:
-            pass
+            return
         # Add button on deselected button does nothing
         if self.last_button.sku not in self.current_order.keys():
-            pass
+            self.current_order[self.last_button.sku] = 0
         self.multiple_selection = True
         self.current_order[self.last_button.sku] += 1
         self.total_amount += self.last_button.price
         # Show the screen for selecting multiples for self.last_button
+        if self.last_button.sku not in self.current_order.keys():
+            order_size = 0
+        else:
+            order_size = self.current_order[self.last_button.sku]
         self.interface.print_on_display(
             f"Ordering {self.last_button.name}, \n"
             f"cost: {self.last_button.price}, \n"
-            f"ordered: {self.current_order[self.last_button.sku]}, "
+            f"ordered: {order_size}, "
             f"total amount: {self.total_amount}")
 
     def handle_minus_button(self):
+        if not self.can_order:
+            return
         # Remove button on empty history does nothing
         if self.last_button is None:
-            pass
+            return
         # Remove button on deselected button does nothing
         if self.last_button.sku not in self.current_order.keys():
-            pass
+            return
         if self.current_order[self.last_button.sku] == 1:
             self.current_order.pop(self.last_button.sku)
             self.interface.switch_light_mode(self.buttons.index(self.last_button), LightState.OFF)
         else:
             self.current_order[self.last_button.sku] -= 1
-            if max(self.current_order.values(), key=(lambda k: self.current_order[k])) == 1:
+            if max(self.current_order.values()) == 1:
                 self.multiple_selection = False
         self.total_amount -= self.last_button.price
         # Show the screen for selecting multiples for self.last_button
+        if self.last_button.sku not in self.current_order.keys():
+            order_size = 0
+        else:
+            order_size = self.current_order[self.last_button.sku]
         self.interface.print_on_display(
             f"Ordering {self.last_button.name}, \n"
             f"cost: {self.last_button.price}, \n"
-            f"ordered: {self.current_order[self.last_button.sku]}, "
+            f"ordered: {order_size}, "
             f"total amount: {self.total_amount}")
 
     def handle_pay_button(self):
+        if not self.can_order:
+            return
         # Turn order into request
         order_request = OrderRequest(elements=list())
         for sku, quantity in self.current_order.items():
@@ -143,7 +159,7 @@ class TableService:
 
     def handle_order_ready(self, colour: Colour):
         # Print info that order is ready
-        self.interface.print_on_display(f"The order is ready, please head to counter {colour.segment} "
+        self.interface.print_on_display(f"The order is ready, please head to counter #{self.segment_ids[colour.segment]} "
                                         f"marked by this colour.")
         # Show colours
         self.interface.set_colour(colour.colour, colour.segment)
@@ -155,4 +171,3 @@ class TableService:
         # Empty the screen
         self.interface.print_on_display("Hello!")
         self.can_order = True
-        pass
