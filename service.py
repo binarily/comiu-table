@@ -149,6 +149,7 @@ class TableService:
             self.current_order = dict()
             self.total_amount = 0.0
             self.last_button = None
+            self.multiple_selection = False
         else:
             self.interface.print_on_display("Internal error, try again.")
 
